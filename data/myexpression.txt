@@ -11,3 +11,7 @@ C*D
 E+F
 ~E-~F
 E+F*E+~C*E*F-123*A
+ABC+YXZ
+#problem here
+A+-3*B
+-3*A

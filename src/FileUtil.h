@@ -6,8 +6,8 @@
 #include "Matrix.h"
 
 #define DATA_DIR "../data"
-#define MATR_IN DATA_DIR"/mymatrix.txt"
-#define EXP_IN DATA_DIR"/myexpression.txt"
+#define MATR_IN DATA_DIR"/testcase_matrix.in"
+#define EXP_IN DATA_DIR"/testcase_expression.in"
 #define RES_OUT DATA_DIR"/my_result.out"
 
 namespace FILEUTIL{

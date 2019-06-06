@@ -72,7 +72,10 @@ string Matrix::to_string() const{
     string res;
     for(int i = 0; i < ROW_NUM; i++){
         for(int j = 0; j < COL_NUM; j++){
-            res+=arr[i*ROW_NUM+j].getVal()+" ";
+            res+=arr[i*ROW_NUM+j].getVal();
+            if(j != COL_NUM-1){
+                res += " ";
+            }
         }
         res+='\n';
     }
@@ -84,6 +87,21 @@ Matrix Matrix::operator~() const{
     for(int i = 0; i < ROW_NUM; i++){
         for(int j = 0; j < COL_NUM; j++){
             m.arr[j*COL_NUM+i] = arr[i*ROW_NUM+j];
+        }
+    }
+    return m;
+}
+
+Matrix Matrix::operator+() const{
+    Matrix m(*this);
+    return m;
+}
+
+Matrix Matrix::operator-() const{
+    Matrix m(COL_NUM,ROW_NUM);
+    for(int i = 0; i < ROW_NUM; i++){
+        for(int j = 0; j < COL_NUM; j++){
+            m.arr[j*COL_NUM+i] = -arr[j*COL_NUM+i];
         }
     }
     return m;
@@ -263,6 +281,12 @@ int main(){
     Matrix mat6(E);
     Matrix mat7 = ~mat1;
     mat7.print();
+    Matrix m10;
+    m10 = -mat7;
+    m10.print();
+    Matrix m11;
+    m11 = +mat7;
+    m11.print();
     EQUAL(mat6==mat7,true);
 
     /* test binary connective */

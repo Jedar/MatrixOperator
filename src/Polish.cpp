@@ -9,6 +9,12 @@ static bool isNumber(char ch);
 static int findIndex(const vector<string>& names, string who);
 static void OP(vector<Matrix *>& stack, string op, const vector<Matrix *>& matrices);
 static bool exists(const vector<Matrix *>& matrices, Matrix *m);
+static void popOperationStack(vector<std::string>& ops, const string& conn, string& result);
+static const string getOperation(const string& exp, int& idx);
+static const string getMatrix(const string& exp, int& idx);
+static const string convertSingleOperation(const string& op);
+static void free_matrices(vector<Matrix *>& ms);
+static vector<Matrix *> copy(const vector<Matrix *>& m);
 
 void POLISH::RPN(vector<string>& exps){
     for(int j = 0; j < exps.size(); j++){
@@ -22,14 +28,18 @@ void POLISH::analyseRPN(const vector<string>& names, const vector<Matrix *>& mat
     vector<Matrix *> stack;
     for(string exp:exps){
         Matrix *m = new Matrix();
+        /* copy matrices to avoid changing input matrices */
+        vector<Matrix *> copyMat = copy(matrices);
         /* transfer matrix must be new one, then 
          * delete matrices in result wouldn't cause error */
-        *m = analyseRPN(names,matrices,exp);
+        *m = analyseRPN(names,copyMat,exp);
         answers.push_back(m);
+        free_matrices(copyMat);
     }
 }
 
 Matrix POLISH::analyseRPN(const vector<string>& names, const vector<Matrix *>& matrices, const string exp){
+    /* this function will affect input matrix */
     Matrix res;
     /* stack */
     vector<Matrix *> stack;
@@ -78,63 +88,33 @@ string POLISH::RPN(string exp){
     int len = exp.size();
     string buf,result;
     int start = 0, count = 0;
-    /* current letter is operator ? true:yes flase:no */
+    /* current letter is operator ? true:yes false:no */
     bool flag;
-    for(int i = 0; i < len; i++){
-        char ch = exp.at(i);
-        if(count == 0){
-            if(isSingleOperator(ch)){
-                buf = ch;
-                while(!ops.empty()){
-                    string cmp = ops[ops.size()-1];
-                    if(priority(buf)<=priority(cmp)){
-                        result.append(cmp+" ");
-                        ops.pop_back();
-                    }
-                    else{
-                        break;
-                    }
-                }
-                ops.push_back(buf);
+    /* a binary connective must stand between two matrix */
+    bool isMatrixBefore = false;
+
+    /* current index */
+    int idx = 0;
+    /* current character */
+    char ch;
+    /* loop to analyse the expression */
+    while(idx < len){
+        ch = exp.at(idx);
+        if(isOperator(ch)){
+            buf = getOperation(exp,idx);
+            if(!isMatrixBefore){
+                buf = convertSingleOperation(buf);
             }
-            else{
-                flag = isOperator(ch);
-                start = i;
-                count++;
-            }
-                
-        }
-        else if(flag == isOperator(ch)){
-            count++;
-        }
-        /* reset start and count value */
-        else if(flag || isSingleOperator(ch)){
-            buf = exp.substr(start,count);
-            while(!ops.empty()){
-                string cmp = ops[ops.size()-1];
-                if(priority(buf)<=priority(cmp)){
-                    result.append(cmp+" ");
-                    ops.pop_back();
-                }
-                else{
-                    break;
-                }
-            }
-            ops.push_back(buf);
-            count = 0;
-            i--;
+            popOperationStack(ops,buf,result);
+            isMatrixBefore = false;
         }
         else{
-            buf = exp.substr(start,count);
+            buf = getMatrix(exp,idx);
             result.append(buf+" ");
-            count = 0;
-            i--;
+            isMatrixBefore = true;
         }
     }
-    if(count != 0){
-        buf = exp.substr(start,count);
-        result.append(buf+" ");
-    }
+    /* pop all operation out */
     while(!ops.empty()){
         string cmp = ops[ops.size()-1];
         result.append(cmp+" ");
@@ -144,6 +124,7 @@ string POLISH::RPN(string exp){
 }
 
 int POLISH::priority(string conn){
+    /* binary + and - */
     if(conn == "+" || conn == "-"){
         return 2;
     }
@@ -152,6 +133,10 @@ int POLISH::priority(string conn){
     }
     else if(conn == "~"){
         return 4;
+    }
+    /* unary + and - */
+    else if(conn == "+++" || conn == "---"){
+        return 5;
     }
     else if(conn == "+=" || conn == "-="){
         return 1;
@@ -162,11 +147,11 @@ int POLISH::priority(string conn){
 }
 
 static bool isOperator(char ch){
-    return (ch == '+')||(ch == '-')||(ch == '*')||(ch == '/')||(ch == '=');
+    return (ch == '+')||(ch == '-')||(ch == '*')||(ch == '/')||(ch == '=')||(ch == '~');
 }
 
 static bool isSingleOperator(char ch){
-    return (ch == '~');
+    return (ch == '~')||(ch == '-')||(ch == '+');
 }
 
 static bool isNumber(char ch){
@@ -197,6 +182,20 @@ static void OP(vector<Matrix *>& stack, string op, const vector<Matrix *>& matri
     if(op == "~"){
         Matrix *mat = new Matrix();
         *mat = ~*stack[stack.size()-1];
+        stack.pop_back();
+        stack.push_back(mat);
+        return;
+    }
+    else if(op == "---"){
+        Matrix *mat = new Matrix();
+        *mat = -*stack[stack.size()-1];
+        stack.pop_back();
+        stack.push_back(mat);
+        return;
+    }
+    else if(op == "+++"){
+        Matrix *mat = new Matrix();
+        *mat = +*stack[stack.size()-1];
         stack.pop_back();
         stack.push_back(mat);
         return;
@@ -241,6 +240,141 @@ static void OP(vector<Matrix *>& stack, string op, const vector<Matrix *>& matri
     if(!exists(matrices,mat2)){
         delete mat2;
     }
+}
+
+static void popOperationStack(vector<std::string>& ops, const string& conn, string& result){
+    /* get operation which has lower priority than conn */
+    while(!ops.empty()){
+        string cmp = ops[ops.size()-1];
+        if(POLISH::priority(conn)<=POLISH::priority(cmp)){
+            result.append(cmp+" ");
+            ops.pop_back();
+        }
+        else{
+            break;
+        }
+    }
+    /* push conn into stack */
+    ops.push_back(conn);
+}
+
+static const string getOperation(const string& exp, int& idx){
+    int size = exp.size();
+    if(idx >= size){
+        return "";
+    }
+    char ch = exp.at(idx);
+    idx++;
+    if(idx >= size){
+        return ""+ch;
+    }
+    switch(ch){
+        case '+':
+            ch = exp.at(idx);
+            if(ch == '='){
+                idx++;
+                return "+=";
+            }
+            else if(ch == '+'){
+                idx++;
+                return "++";
+            }
+            else{
+                return "+";
+            }
+            break;
+        case '-':
+            ch = exp.at(idx);
+            if(ch == '='){
+                idx++;
+                return "-=";
+            }
+            else if(ch == '-'){
+                idx++;
+                return "--";
+            }
+            else{
+                return "-";
+            }
+            break;
+        case '*':
+            ch = exp.at(idx);
+            if(ch == '='){
+                idx++;
+                return "*=";
+            }
+            else{
+                return "*";
+            }
+            break;
+        case '=':
+            ch = exp.at(idx);
+            if(ch == '='){
+                idx++;
+                return "==";
+            }
+            else{
+                return "=";
+            }
+            break;
+        case '~':
+            return "~";
+
+        default:
+            idx--;
+            return "";
+    }
+}
+
+static const string getMatrix(const string& exp, int& idx){
+    char ch;
+    int size = exp.size();
+    if(idx >= size){
+        return "";
+    }
+    int start = idx,count = 0;
+    ch = exp.at(idx);
+    while(idx < size){
+        ch = exp.at(idx);
+        if(isOperator(ch)){
+            break;
+        }
+        idx++;
+        count++;
+    }
+    return exp.substr(start,count);
+}
+
+static const string convertSingleOperation(const string& op){
+    if(op == "~"){
+        return "~";
+    }
+    /* unary connective of - */
+    else if(op == "-"){
+        return "---";
+    }
+    /* unary connective of + */
+    else if(op == "+"){
+        return "+++";
+    }
+    return "";
+}
+
+static vector<Matrix *> copy(const vector<Matrix *>& m){
+    vector<Matrix *> ret;
+    for(Matrix *mptr:m){
+        Matrix *mat = new Matrix();
+        *mat = *mptr;
+        ret.push_back(mat);
+    }
+    return ret;
+}
+
+static void free_matrices(vector<Matrix *>& ms){
+    for(Matrix *m:ms){
+        delete m;
+    }
+    ms.clear();
 }
 
 #ifdef DEBUG

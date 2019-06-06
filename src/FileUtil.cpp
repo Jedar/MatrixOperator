@@ -81,9 +81,11 @@ void FILEUTIL::outputAnswer(const vector<Matrix *>& mat, string path){
         // exit(1);
     }
 
+    string separator = "-----------------------\n";
     for(Matrix *m:mat){
+        os<<separator;
         string msg = m->to_string();
-        os.write(msg.c_str(),msg.size());
+        os<<msg;
     }
 
     os.close();

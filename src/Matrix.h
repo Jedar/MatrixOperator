@@ -57,6 +57,10 @@ public:
 
     Matrix operator~() const;
 
+    Matrix operator+() const;
+
+    Matrix operator-() const;
+
     Matrix& operator=(const Matrix& m);
 
     Matrix& operator+=(const Matrix& m);

@@ -15,6 +15,8 @@ namespace BIGNUM{
     private:
         /* n-ary to story number */
         static const int NARY = 10000;
+        /* byte of each position */
+        static const int NARY_LEN = 4;
         /* MAX length of Bignum */
         static const int MAXLEN = 300;
         /* array to story number */

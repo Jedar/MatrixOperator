@@ -92,9 +92,17 @@ const string BIGNUM::Bignum::getVal() const{
     if(!sign){
         str += '-';
     }
-    for(int i = len-1; i >= 0; i--){
-        str += to_string(arr[i]);
+    int i = len-1;
+    str += to_string(arr[i]);
+
+    for(i = len - 2; i >= 0; i--){
+        string num = to_string(arr[i]);
+        for(int j = num.size(); j < NARY_LEN; j++){
+            num = "0" + num;
+        }
+        str += num;
     }
+    
     return str;
 }
 
@@ -286,7 +294,24 @@ static void BIGNUM::arr_add(const int *src1, const int *src2, int *dst, int len,
 }
 
 static bool BIGNUM::arr_subtract(const int *src1, const int *src2, int *dst, int len, int nary ,int maxLen){
-    bool flag = (src1[len-1] >= src2[len-1]);
+    /* bug here */
+    /* we can't compare two number just by their first number */
+    /* this is too rediculous */
+    /* the wrong code below */
+    /* bool flag = (src1[len-1] >= src2[len-1]); */
+
+    /* flag means first number is bigger than second one */
+    bool flag = true;
+    for(int i = len-1; i >= 0; i--){
+        if(src1[i] > src2[i]){
+            flag = true;
+            break;
+        }
+        else if(src1[i] < src2[i]){
+            flag = false;
+            break;
+        }
+    }
     const int *src;
     if(flag){
         memcpy(dst,src1,sizeof(int)*maxLen);

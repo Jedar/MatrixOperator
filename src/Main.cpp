@@ -1,7 +1,7 @@
 #include "FileUtil.h"
 #include "Polish.h"
 
-void free_matrices(vector<Matrix *>& ms){
+static void free_matrices(vector<Matrix *>& ms){
     for(Matrix *m:ms){
         delete m;
     }
