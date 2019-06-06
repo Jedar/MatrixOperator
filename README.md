@@ -1,4 +1,5 @@
 # Big Number Matrix Operator  
+(```)  
  ____ ___ ____   _   _ _   _ __  __ ____  _____ ____    
 | __ )_ _/ ___| | \ | | | | |  \/  | __ )| ____|  _ \   
 |  _ \| | |  _  |  \| | | | | |\/| |  _ \|  _| | |_) |  
@@ -10,6 +11,7 @@
 | |\/| | / _ \ | | | |_) || | \  /   
 | |  | |/ ___ \| | |  _ < | | /  \   
 |_|  |_/_/   \_\_| |_| \_\___/_/\_\  
+(```)  
 
 ## Explain  
    This is Lab4 of course OOP  
@@ -45,7 +47,7 @@
 
 ## Change Log
 2019.6.6  
-Fix error in big number substraction  
+Fix error in big number subtraction  
   
 2019.6.6  
 Add test case of TA  
