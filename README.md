@@ -57,3 +57,6 @@ Fix Polish RPN, let operation in one expression won't affect next expression
   
 2019.6.6  
 Fix output file format, add separator  
+
+2019.6.6
+Fix memory leak problem, free matrix after single operation

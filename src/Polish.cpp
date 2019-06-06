@@ -179,30 +179,36 @@ static bool exists(const vector<Matrix *>& matrices, Matrix *m){
 }
 
 static void OP(vector<Matrix *>& stack, string op, const vector<Matrix *>& matrices){
+    Matrix *mat2 = stack[stack.size()-1];
+    stack.pop_back();
     if(op == "~"){
         Matrix *mat = new Matrix();
-        *mat = ~*stack[stack.size()-1];
-        stack.pop_back();
+        *mat = ~*mat2;
         stack.push_back(mat);
+        if(!exists(matrices,mat2)){
+            delete mat2;
+        }
         return;
     }
     else if(op == "---"){
         Matrix *mat = new Matrix();
-        *mat = -*stack[stack.size()-1];
-        stack.pop_back();
+        *mat = -*mat2;
         stack.push_back(mat);
+        if(!exists(matrices,mat2)){
+            delete mat2;
+        }
         return;
     }
     else if(op == "+++"){
         Matrix *mat = new Matrix();
-        *mat = +*stack[stack.size()-1];
-        stack.pop_back();
+        *mat = +*mat2;
         stack.push_back(mat);
+        if(!exists(matrices,mat2)){
+            delete mat2;
+        }
         return;
     }
     bool mat1Used = false;
-    Matrix *mat2 = stack[stack.size()-1];
-    stack.pop_back();
     Matrix *mat1 = stack[stack.size()-1];
     stack.pop_back();
     if(op == "+"){
