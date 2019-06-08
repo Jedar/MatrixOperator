@@ -60,3 +60,9 @@ Fix output file format, add separator
 
 2019.6.6  
 Fix memory leak problem, free matrix after single operation  
+
+2019.6.8  
+Add some comments, and put all test into direction test  
+
+2019.6.8  
+Fix default test file name(matrix.in,expression.in,result.out)

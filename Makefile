@@ -24,18 +24,6 @@ matrix: $(SRCDIR)/Matrix.cpp
 polish: $(SRCDIR)/Polish.cpp
 	$(CPP) -c -o $(BINDIR)/$@.o $<
 
-bignum_dbg: $(SRCDIR)/Bignum.cpp
-	$(CPP) -o $(BINDIR)/$@ $< $(DEF)
-	(cd $(BINDIR);./bignum_dbg)
-
-matrix_dbg: $(SRCDIR)/Matrix.cpp bignum
-	$(CPP) -o $(BINDIR)/$@ $< $(DEF) $(BINDIR)/bignum.o
-	(cd $(BINDIR);./matrix_dbg)
-
-polish_dbg: $(SRCDIR)/Polish.cpp matrix bignum
-	$(CPP) -o $(BINDIR)/$@ $< $(DEF) $(BINDIR)/matrix.o $(BINDIR)/bignum.o
-	(cd $(BINDIR);./polish_dbg)
-
 run:
 	cd $(BINDIR);./main
 

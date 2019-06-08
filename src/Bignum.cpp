@@ -128,11 +128,13 @@ const Bignum& BIGNUM::Bignum::operator=(const Bignum& num){
 const Bignum BIGNUM::Bignum::operator+(const Bignum& num) const{
     Bignum res;
     int length = (len >= num.len)?len:num.len;
+    /* same sign, do addness */
     if((sign&&num.sign)||(!sign&&!num.sign)){
         arr_add(arr,num.arr,res.arr,length,NARY);
         res.len = (res.arr[length] == 0)?length:length+1;
         res.sign = sign;
     }
+    /* do subtraction */
     else{
         bool ret = arr_subtract(arr,num.arr,res.arr,length,NARY,MAXLEN);
         // res.len = length;
@@ -146,6 +148,7 @@ const Bignum BIGNUM::Bignum::operator+(const Bignum& num) const{
 }
 
 const Bignum BIGNUM::Bignum::operator-(const Bignum& num) const{
+    /* consider m1-m2 = m1+(-m2) */
     Bignum neg_num(num,!num.sign);
     return *this+neg_num;
 }
@@ -153,9 +156,9 @@ const Bignum BIGNUM::Bignum::operator-(const Bignum& num) const{
 const Bignum BIGNUM::Bignum::operator*(const Bignum& num) const{
     Bignum res;
     int nary = NARY;
-    // printf("%d\n",nary);
+    /* get max length */
     int length = (len >= num.len)?len:num.len;
-    // printf("\n%d   %d\n",res.arr[0], res.arr[1]);
+    /* do multification */
     for(int i = 0; i < length; i++){
         for(int j = 0; j < length; j++){
             int mul = arr[i]*num.arr[j];
@@ -277,11 +280,14 @@ const Bignum& BIGNUM::Bignum::operator/=(const Bignum& num){
 }
 
 static void BIGNUM::arr_add(const int *src1, const int *src2, int *dst, int len, int nary){
+    /* array1 + array2, both are positive */
     int res,carryBit = 0;
     int i;
     for(i = 0; i < len; i++){
+        /* carryBit may 0 or 1 */
         res = src1[i] + src2[i] + carryBit;
         if(res >= nary){
+            /* overflow, set carry bit */
             carryBit = 1;
             res -= nary;
         }
@@ -299,6 +305,7 @@ static bool BIGNUM::arr_subtract(const int *src1, const int *src2, int *dst, int
     /* this is too rediculous */
     /* the wrong code below */
     /* bool flag = (src1[len-1] >= src2[len-1]); */
+    /* bug fixed now */
 
     /* flag means first number is bigger than second one */
     bool flag = true;
@@ -313,6 +320,7 @@ static bool BIGNUM::arr_subtract(const int *src1, const int *src2, int *dst, int
         }
     }
     const int *src;
+    /* copy array */
     if(flag){
         memcpy(dst,src1,sizeof(int)*maxLen);
         src = src2;
@@ -321,6 +329,7 @@ static bool BIGNUM::arr_subtract(const int *src1, const int *src2, int *dst, int
         memcpy(dst,src2,sizeof(int)*maxLen);
         src = src1;
     }
+    /* do subtraction */
     for(int i = len-1; i >= 0; i--){
         dst[i] -= src[i];
         if(dst[i]<0){
@@ -331,79 +340,4 @@ static bool BIGNUM::arr_subtract(const int *src1, const int *src2, int *dst, int
     return flag;
 }
 
-#ifdef DEBUG
-int main(){
-    /* test constructor */
-    PRT("test constructor");
-    Bignum num(123);
-    Bignum num1(123456);
-    Bignum num2("1234");
-    Bignum num3("1234567");
-    Bignum num4(-123456);
-    Bignum num5("-1234569");
 
-    EQUAL(num.getVal(),"123");
-    EQUAL(num1.getVal(),"123456");
-    EQUAL(num2.getVal(),"1234");
-    EQUAL(num3.getVal(),"1234567");
-    EQUAL(num4.getVal(),"-123456");
-    EQUAL(num5.getVal(),"-1234569");
-    /*  */
-    PRT("test copy constructor");
-    Bignum num6 = 12345678;
-    Bignum num7 = "-894568465478894651651651";
-    EQUAL(num6.getVal(),"12345678");
-    EQUAL(num7.getVal(),"-894568465478894651651651");
-
-    /* test assign */
-    PRT("test assign");
-    Bignum num8;
-    EQUAL(num8.getVal(),"0");
-    num8 = num7;
-    EQUAL(num8.getVal(),"-894568465478894651651651");
-
-    /* test unary connective */
-    PRT("test unary connective");
-    Bignum num9("1234567984651651");
-    num9 = -num9;
-    EQUAL(num9.getVal(),"-1234567984651651");
-    num9 = +num9;
-    EQUAL(num9.getVal(),"-1234567984651651");
-    num9 = -num9;
-    EQUAL(num9.getVal(),"1234567984651651");
-
-    /* test binary connective */
-    PRT("test binary connective");
-    Bignum num10("123456");
-    Bignum num11("-1234568");
-    Bignum num12("564845");
-    Bignum num13("-89544");
-    Bignum temp1("0");
-    Bignum temp2("9999999999");
-    EQUAL((num10+num12).getVal(),to_string(123456+564845));
-    EQUAL((num13+num11).getVal(),to_string(-89544-1234568));
-    EQUAL((num10+num11).getVal(),to_string(123456-1234568));
-    EQUAL((num12-num10).getVal(),to_string(564845-123456));
-    EQUAL((temp1*temp2).getVal(),to_string(0*9999999999));
-    EQUAL((num12*num10).getVal(),to_string(564845l*123456l));
-    EQUAL((num10*num11).getVal(),to_string(123456l*(-1234568l)));
-    EQUAL((num13*num11).getVal(),to_string((-89544l)*(-1234568l)));
-
-    /* test compare operation */
-    PRT("test compare operation");
-    EQUAL(num10>num11,true);
-    EQUAL(num11==-1234568,true);
-    EQUAL(num13<num12,true);
-    EQUAL(num11>0,false);
-    EQUAL((num11>=num12),false);
-    EQUAL(num12>=num10,true);
-
-    /* test operation assignment */
-    PRT("test operation assignment");
-    Bignum num14(123456);
-    num14 += 111111;
-    EQUAL(num14.getVal(),"234567");
-    num14 -= 1000000;
-    EQUAL(num14.getVal(),to_string(-1000000+234567));
-}
-#endif

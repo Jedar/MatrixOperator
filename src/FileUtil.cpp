@@ -24,9 +24,11 @@ void FILEUTIL::initMatrixMap(vector<string>& names, vector<Matrix *>& matrices, 
 
     for(int i = 0; i < number; i++){
         string buffer;
+        /* analyse matrix name */
         getline(is,buffer);
         string name(buffer);
         int idx = 0;
+        /* get grid value */
         for(int j = 0; j < ROW; j++){
             getline(is,buffer);
             int size = buffer.size();
@@ -49,6 +51,7 @@ void FILEUTIL::initMatrixMap(vector<string>& names, vector<Matrix *>& matrices, 
                 mat[idx++] = buffer.substr(start,count);
             }
         }
+        /* add to vector */
         names.push_back(name);
         matrices.push_back(new Matrix(mat));
     }
@@ -81,6 +84,7 @@ void FILEUTIL::outputAnswer(const vector<Matrix *>& mat, string path){
         // exit(1);
     }
 
+    /* add to separate result matrices */
     string separator = "-----------------------\n";
     for(Matrix *m:mat){
         os<<separator;
